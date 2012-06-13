@@ -22,8 +22,13 @@
 #define TODO_ASSERT assert  /* i.e. needs proper runtime handling */
 
 
-void notify_skipped(off_t first_skipped_byte, off_t last_skipped_byte) {
-	printf("Skipping bytes %ld to %ld\n", first_skipped_byte, last_skipped_byte);
+void notify_skipped(off_t first_skipped_byte, off_t last_skipped_byte, off_t blocks_affected) {
+	printf("Skipping bytes %ld to %ld (%ld blocks)\n", first_skipped_byte, last_skipped_byte, blocks_affected);
+}
+
+
+void notify_written(off_t first_written_byte, off_t last_written_byte, off_t blocks_affected) {
+	printf("Writing bytes %ld to %ld (%ld blocks)\n", first_written_byte, last_written_byte, blocks_affected);
 }
 
 
@@ -60,6 +65,9 @@ int main(int argc, char ** argv) {
 	int skip_first_index = -1;
 	int skip_last_index = -1;
 
+	int write_first_index = -1;
+	int write_last_index = -1;
+
 	for (int block_index = 0; block_index < block_count; block_index++) {
 		const size_t count = (block_index == block_count - 1)
 				? st_src.st_size - BLOCK_SIZE * (st_src.st_size / BLOCK_SIZE)
@@ -74,15 +82,30 @@ int main(int argc, char ** argv) {
 			if (skip_first_index != -1) {
 				const off_t first_skipped_byte = BLOCK_SIZE * (off_t)skip_first_index;
 				const off_t last_skipped_byte = BLOCK_SIZE * (off_t)(skip_last_index + 1) - 1;
-				notify_skipped(first_skipped_byte, last_skipped_byte);
+				const off_t blocks_affected = skip_last_index - skip_first_index + 1;
+				notify_skipped(first_skipped_byte, last_skipped_byte, blocks_affected);
 				skip_first_index = -1;
 			}
 
-			printf("Writing bytes %ld to %ld\n", offset, offset + count - 1);
 			const ssize_t bytes_written_dst = pwrite(fd_dst, buf_src, count, offset);
 			TODO_ASSERT(bytes_written_dst == count);
 			blocks_written++;
+
+			if (write_first_index == -1) {
+				write_first_index = block_index;
+				write_last_index = block_index;
+			} else {
+				write_last_index++;
+			}
 		} else {
+			if (write_first_index != -1) {
+				const off_t first_written_byte = BLOCK_SIZE * (off_t)write_first_index;
+				const off_t last_written_byte = BLOCK_SIZE * (off_t)(write_last_index + 1) - 1;
+				const off_t blocks_affected = write_last_index - write_first_index + 1;
+				notify_written(first_written_byte, last_written_byte, blocks_affected);
+				write_first_index = -1;
+			}
+
 			if (skip_first_index == -1) {
 				skip_first_index = block_index;
 				skip_last_index = block_index;
@@ -92,11 +115,20 @@ int main(int argc, char ** argv) {
 		}
 
 		if (block_index == block_count - 1) {
+			assert(! ((skip_first_index != -1) && (write_first_index != -1)));
+
 			if (skip_first_index != -1) {
 				const off_t first_skipped_byte = BLOCK_SIZE * (off_t)skip_first_index;
 				const off_t last_skipped_byte = offset + count - 1;
-				notify_skipped(first_skipped_byte, last_skipped_byte);
+				const off_t blocks_affected = block_index - skip_first_index + 1;
+				notify_skipped(first_skipped_byte, last_skipped_byte, blocks_affected);
 				skip_first_index = -1;
+			} else if (write_first_index != -1) {
+				const off_t first_written_byte = BLOCK_SIZE * (off_t)write_first_index;
+				const off_t last_written_byte = offset + count - 1;
+				const off_t blocks_affected = block_index - write_first_index + 1;
+				notify_written(first_written_byte, last_written_byte, blocks_affected);
+				write_first_index = -1;
 			}
 		}
 	}
