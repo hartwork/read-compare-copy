@@ -23,12 +23,12 @@
 
 
 void notify_skipped(off_t first_skipped_byte, off_t last_skipped_byte, off_t blocks_affected) {
-	printf("Skipping bytes %ld to %ld (%ld blocks)\n", first_skipped_byte, last_skipped_byte, blocks_affected);
+	printf("Bytes %ld to %ld identical already (%ld blocks)\n", first_skipped_byte, last_skipped_byte, blocks_affected);
 }
 
 
 void notify_written(off_t first_written_byte, off_t last_written_byte, off_t blocks_affected) {
-	printf("Writing bytes %ld to %ld (%ld blocks)\n", first_written_byte, last_written_byte, blocks_affected);
+	printf("Bytes %ld to %ld copied (%ld blocks)\n", first_written_byte, last_written_byte, blocks_affected);
 }
 
 
