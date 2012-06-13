@@ -108,7 +108,9 @@ int main(int argc, char ** argv) {
 			? 0.0
 			: 100.0 - (blocks_written * 100.0 / block_count);
 
-	printf("\nBlocks written: %d/%d  (%.2f%% saved)\n", blocks_written, block_count, percent_saved);
+	printf("\n");
+	printf("Blocks read: %d/%d  (%.2f%% wasted)\n", block_count * 2, block_count, 100.0);
+	printf("Blocks written: %d/%d  (%.2f%% saved)\n", blocks_written, block_count, percent_saved);
 
 	return 0;
 }
