@@ -64,7 +64,7 @@ int main(int argc, char ** argv) {
 		const size_t count = (block_index == block_count - 1)
 				? st_src.st_size - BLOCK_SIZE * (st_src.st_size / BLOCK_SIZE)
 				: BLOCK_SIZE;
-		const off_t offset = BLOCK_SIZE * block_index;
+		const off_t offset = BLOCK_SIZE * (off_t)block_index;
 		const ssize_t bytes_read_src = pread(fd_src, (void *)buf_src, count, offset);
 		const ssize_t bytes_read_dst = pread(fd_dst, (void *)buf_dst, count, offset);
 		TODO_ASSERT(bytes_read_src == count);
@@ -72,8 +72,8 @@ int main(int argc, char ** argv) {
 
 		if (! memcmp(buf_src, buf_dst, BLOCK_SIZE) == 0) {
 			if (skip_first_index != -1) {
-				const off_t first_skipped_byte = BLOCK_SIZE * skip_first_index;
-				const off_t last_skipped_byte = BLOCK_SIZE * (skip_last_index + 1) - 1;
+				const off_t first_skipped_byte = BLOCK_SIZE * (off_t)skip_first_index;
+				const off_t last_skipped_byte = BLOCK_SIZE * (off_t)(skip_last_index + 1) - 1;
 				notify_skipped(first_skipped_byte, last_skipped_byte);
 				skip_first_index = -1;
 			}
@@ -93,7 +93,7 @@ int main(int argc, char ** argv) {
 
 		if (block_index == block_count - 1) {
 			if (skip_first_index != -1) {
-				const off_t first_skipped_byte = BLOCK_SIZE * skip_first_index;
+				const off_t first_skipped_byte = BLOCK_SIZE * (off_t)skip_first_index;
 				const off_t last_skipped_byte = offset + count - 1;
 				notify_skipped(first_skipped_byte, last_skipped_byte);
 				skip_first_index = -1;
