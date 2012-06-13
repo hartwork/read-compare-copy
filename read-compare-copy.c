@@ -50,7 +50,7 @@ int main(int argc, char ** argv) {
 	const int fstat_res_dst = fstat(fd_dst, &st_dst);
 	TODO_ASSERT(fstat_res_src != -1);
 	TODO_ASSERT(fstat_res_dst != -1);
-	
+
 	TODO_ASSERT(st_src.st_size == st_dst.st_size);
 
 	const int block_count = st_src.st_size / BLOCK_SIZE + (st_src.st_size % BLOCK_SIZE != 0);
